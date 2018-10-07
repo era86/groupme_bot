@@ -34,7 +34,6 @@ def get_rating():
 
     return 'y'
 
-
 def get_giphy_url(query=''):
     giphy_token = os.environ['GIPHY_TOKEN']
     giphy_rating = get_rating()
@@ -86,7 +85,8 @@ def groupme_callback():
 
             return response
 
-        if message_parts[0] == '/thermonuclear' and json_body['name'] == 'Fred':
+        env_nsfw = os.environ.get('THERMO')
+        if env_nsfw == '1' and message_parts[0] == '/thermonuclear' and json_body['name'] == 'Fred':
             response = get_nsfw_url()
             reply_to_groupme(response)
 
