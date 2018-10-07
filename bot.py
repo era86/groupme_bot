@@ -48,8 +48,8 @@ def get_giphy_url(query=''):
     return gif['images']['original']['url']
 
 def get_nsfw_url():
-    nsfw_url = "https://www.reddit.com/r/NSFW_GIF.json", headers={'User-agent': 'giphy-bot'}
-    response = requests.get(nsfw_url)
+    nsfw_url = "https://www.reddit.com/r/NSFW_GIF.json"
+    response = requests.get(nsfw_url, headers={'User-agent': 'giphy-bot'})
     results = json.loads(response.text)
 
     gif = results['data']['children'][random.randint(0, 25)]
