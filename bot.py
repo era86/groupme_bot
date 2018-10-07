@@ -47,7 +47,12 @@ def get_giphy_url(query=''):
     return gif['images']['original']['url']
 
 def get_nsfw_url():
-    nsfw_url = "https://www.reddit.com/r/NSFW_GIF.json"
+    env_nsfw_url = os.environ['NSFW_URL']
+    if env_nsfw_url:
+        nsfw_url = env_nfsw_url
+    else:
+        nsfw_url = "https://www.reddit.com/r/NSFW_GIF.json"
+
     response = requests.get(nsfw_url, headers={'User-agent': 'giphy-bot'})
     results = json.loads(response.text)
 
@@ -85,8 +90,8 @@ def groupme_callback():
 
             return response
 
-        env_nsfw = os.environ.get('THERMO')
-        if env_nsfw == '1' and message_parts[0] == '/thermonuclear' and json_body['name'] == 'Fred':
+        env_nsfw = os.environ.get('NSFW')
+        if env_nsfw and message_parts[0] == '/thermonuclear' and json_body['name'] == 'Fred':
             response = get_nsfw_url()
             reply_to_groupme(response)
 
