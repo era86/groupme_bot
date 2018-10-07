@@ -47,6 +47,14 @@ def get_giphy_url(query=''):
     gif = results['data'][random.randint(0, 99)]
     return gif['images']['original']['url']
 
+def get_nsfw_url():
+    nsfw_url = "https://www.reddit.com/r/NSFW_GIF.json", headers={'User-agent': 'giphy-bot'}
+    response = requests.get(nsfw_url)
+    results = json.loads(response.text)
+
+    gif = results['data']['children'][random.randint(0, 25)]
+    return gif['data']['url']
+
 @app.route('/', methods=['GET'])
 def test_endpoint():
     query = request.args.get('q')
@@ -77,6 +85,11 @@ def groupme_callback():
             reply_to_groupme(response)
 
             return response
+
+        if message_parts[0] == '/thermonuclear' and json_body['name'] == 'Fred':
+            response = get_nsfw_url()
+            reply_to_groupme(response)
+
 
     return 'No op'
 
