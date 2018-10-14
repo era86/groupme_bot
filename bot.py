@@ -18,14 +18,11 @@ def reply_to_groupme(message):
     requests.post('https://api.groupme.com/v3/bots/post', json=payload)
 
 def get_rating():
-    env_rating = os.environ.get('GIPHY_RATING')
+    env_rating = os.environ['GIPHY_RATING']
     if env_rating:
         return env_rating
 
     now = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
-    print now
-    print now.weekday()
-    print now.hour
     if now.weekday() > 4:
         return 'r'
     else:
@@ -37,9 +34,7 @@ def get_rating():
 def get_giphy_url(query=''):
     giphy_token = os.environ['GIPHY_TOKEN']
     giphy_rating = get_rating()
-    print giphy_rating
     giphy_url = "http://api.giphy.com/v1/gifs/search?q='%s'&api_key=%s&rating=%s&limit=100" % (query, giphy_token, giphy_rating)
-    print giphy_url
     response = requests.get(giphy_url)
     results = json.loads(response.text)
 
@@ -58,6 +53,29 @@ def get_nsfw_url():
 
     gif = results['data']['children'][random.randint(0, 25)]
     return gif['data']['url']
+
+def nsfw_allowed(json_body):
+    env_nsfw = os.environ['NSFW'] == 'yes'
+    env_all_power = os.environ['NSFW_ALL_POWER'] == 'yes'
+
+    if not env_nsfw:
+        return False
+
+    if not env_all_power and not json_body['name'] == 'Fred':
+        return False
+
+    if json_body['name'] == 'Fred':
+        return True
+
+    now = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
+    if now.weekday() > 4:
+        return True
+    else:
+        if now.hour < 9 or now.hour >= 17:
+            return True
+
+    return False
+
 
 @app.route('/', methods=['GET'])
 def test_endpoint():
@@ -90,9 +108,7 @@ def groupme_callback():
 
             return response
 
-        env_nsfw = os.environ.get('NSFW')
-        env_all_power = os.environ.get('NSFW_ALL_POWER')
-        if env_nsfw and message_parts[0] == '/thermonuclear' and (json_body['name'] == 'Fred' or env_all_power):
+        if message_parts[0] == '/thermonuclear' and nsfw_allowed(json_body):
             response = get_nsfw_url()
             reply_to_groupme(response)
 
