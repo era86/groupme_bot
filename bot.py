@@ -8,17 +8,17 @@ import pytz
 app = Flask(__name__)
 
 def verify_groupme_message(json_body):
-    return json_body['group_id'] == os.environ['GROUP_ID'] and json_body['sender_type'] != 'bot'
+    return json_body['group_id'] == os.getenv('GROUP_ID') and json_body['sender_type'] != 'bot'
 
 def reply_to_groupme(message):
     payload = {
-        'bot_id' : os.environ['BOT_ID'],
+        'bot_id' : os.getenv('BOT_ID'),
         'text'   : message,
     }
     requests.post('https://api.groupme.com/v3/bots/post', json=payload)
 
 def get_rating():
-    env_rating = os.environ['GIPHY_RATING']
+    env_rating = os.getenv('GIPHY_RATING')
     if env_rating:
         return env_rating
 
@@ -32,7 +32,7 @@ def get_rating():
     return 'y'
 
 def get_giphy_url(query=''):
-    giphy_token = os.environ['GIPHY_TOKEN']
+    giphy_token = os.getenv('GIPHY_TOKEN')
     giphy_rating = get_rating()
     giphy_url = "http://api.giphy.com/v1/gifs/search?q='%s'&api_key=%s&rating=%s&limit=100" % (query, giphy_token, giphy_rating)
     response = requests.get(giphy_url)
@@ -42,7 +42,7 @@ def get_giphy_url(query=''):
     return gif['images']['original']['url']
 
 def get_nsfw_url():
-    env_nsfw_url = os.environ['NSFW_URL']
+    env_nsfw_url = os.getenv('NSFW_URL')
     if env_nsfw_url:
         nsfw_url = env_nsfw_url
     else:
@@ -55,8 +55,8 @@ def get_nsfw_url():
     return gif['data']['url']
 
 def nsfw_allowed(json_body):
-    env_nsfw = os.environ['NSFW'] == 'yes'
-    env_all_power = os.environ['NSFW_ALL_POWER'] == 'yes'
+    env_nsfw = os.getenv('NSFW') == 'yes'
+    env_all_power = os.getenv('NSFW_ALL_POWER') == 'yes'
 
     if not env_nsfw:
         return False
