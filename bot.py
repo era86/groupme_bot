@@ -2,8 +2,6 @@ import os
 import random
 from flask import Flask, json, request
 import requests
-import datetime
-import pytz
 
 app = Flask(__name__)
 
@@ -11,11 +9,6 @@ app = Flask(__name__)
 # BOT_ID
 # GIPHY_RATING
 # GIPHY_TOKEN
-# NSFW_URL
-# NSFW_ALLOWED
-# NSFW_ALLOWED_ALL
-# CUSTOM_COMMAND
-# CUSTOM_URL
 
 def verify_groupme_message(json_body):
     return json_body['group_id'] == os.getenv('GROUP_ID') and json_body['sender_type'] != 'bot'
@@ -27,67 +20,28 @@ def reply_to_groupme(message):
     }
     requests.post('https://api.groupme.com/v3/bots/post', json=payload)
 
-def get_rating():
-    env_rating = os.getenv('GIPHY_RATING')
-    if env_rating:
-        return env_rating
-
-    now = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
-    if now.weekday() > 4:
-        return 'r'
-    else:
-        if now.hour < 9 or now.hour >= 17:
-            return 'r'
-
-    return 'y'
-
 def get_giphy_url(query=''):
     giphy_token = os.getenv('GIPHY_TOKEN')
-    giphy_rating = get_rating()
-    giphy_url = "http://api.giphy.com/v1/gifs/search?q='%s'&api_key=%s&rating=%s&limit=100" % (query, giphy_token, giphy_rating)
-    print(giphy_url)
-    response = requests.get(giphy_url)
+    giphy_rating = os.getenv('GIPHY_RATING') or 'y'
+
+    url = "http://api.giphy.com/v1/gifs/search?q='{query}'&api_key={token}&rating={rating}&limit=100".format(
+        query=query,
+        token=giphy_token,
+        rating=giphy_rating
+    )
+    response = requests.get(url)
     results = json.loads(response.text)
 
     gif = results['data'][random.randint(0, 99)]
     return gif['images']['original']['url']
 
-def get_nsfw_url():
-    return os.getenv('NSFW_URL') or "https://www.reddit.com/r/FoodPorn.json"
-
-def get_custom_url():
-    return os.getenv('CUSTOM_URL') or "https://www.reddit.com/r/FoodPorn.json"
-
-def get_reddit_url(url):
+def get_reddit_url(sub):
+    url = "https://www.reddit.com/r/{}.json".format(sub)
     response = requests.get(url, headers={'User-agent': 'giphy-bot'})
     results = json.loads(response.text)
 
-    gif = results['data']['children'][random.randint(0, 25)]
-    return gif['data']['url']
-
-
-def nsfw_allowed(json_body):
-    nsfw_allowed = os.getenv('NSFW_ALLOWED') == 'yes'
-    nsfw_allowed_all = os.getenv('NSFW_ALLOWED_ALL') == 'yes'
-
-    if not nsfw_allowed:
-        return False
-
-    if not nsfw_allowed_all and not json_body['name'] == 'Fred':
-        return False
-
-    if json_body['name'] == 'Fred':
-        return True
-
-    now = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
-    if now.weekday() > 4:
-        return True
-    else:
-        if now.hour < 9 or now.hour >= 17:
-            return True
-
-    return False
-
+    link = results['data']['children'][random.randint(0, 25)]
+    return link['data']['url']
 
 @app.route('/', methods=['GET'])
 def test_endpoint():
@@ -97,6 +51,22 @@ def test_endpoint():
 @app.route('/', methods=['POST'])
 def groupme_callback():
     json_body = request.get_json()
+
+    giphy_cmds = {}
+    for n in range(3):
+        cmd = os.getenv('GIPHY_CMD_{}'.format(n))
+        query = os.getenv('GIPHY_QUERY_{}'.format(n))
+
+        if cmd:
+            giphy_cmds[cmd] = query
+
+    reddit_cmds = {}
+    for n in range(3):
+        cmd = os.getenv('REDDIT_CMD_{}'.format(n))
+        sub = os.getenv('REDDIT_SUB_{}'.format(n))
+
+        if cmd:
+            reddit_cmds[cmd] = sub
 
     if verify_groupme_message(json_body):
         message = json_body['text']
@@ -120,21 +90,15 @@ def groupme_callback():
 
             return response
 
-        if message_parts[0] == '/itadakipussy':
-            response = get_giphy_url('blackpink')
-            reply_to_groupme(response)
+        for cmd, query in giphy_cmds.items():
+            if message_parts[0] == "/{}".format(cmd):
+                response = get_giphy_url(query)
+                reply_to_groupme(response)
 
-        if message_parts[0] == '/erection' and nsfw_allowed(json_body):
-            url = get_nsfw_url()
-            response = get_reddit_url(url)
-            reply_to_groupme(response)
-
-        custom_command = os.getenv('CUSTOM_COMMAND') or 'thermonuclear'
-        if message_parts[0] == '/{}'.format(custom_command):
-            url = get_custom_url()
-            response = get_reddit_url(url)
-            reply_to_groupme(response)
-
+        for cmd, sub in reddit_cmds.items():
+            if message_parts[0] == "/{}".format(cmd):
+                response = get_reddit_url(sub)
+                reply_to_groupme(response)
 
     return 'No op'
 
