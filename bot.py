@@ -53,7 +53,7 @@ def groupme_callback():
     json_body = request.get_json()
 
     giphy_cmds = {}
-    for n in range(3):
+    for n in range(20):
         cmd = os.getenv('GIPHY_CMD_{}'.format(n))
         query = os.getenv('GIPHY_QUERY_{}'.format(n))
 
@@ -61,7 +61,7 @@ def groupme_callback():
             giphy_cmds[cmd] = query
 
     reddit_cmds = {}
-    for n in range(3):
+    for n in range(20):
         cmd = os.getenv('REDDIT_CMD_{}'.format(n))
         sub = os.getenv('REDDIT_SUB_{}'.format(n))
 
