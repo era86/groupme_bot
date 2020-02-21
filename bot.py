@@ -78,6 +78,18 @@ def groupme_callback():
             reply_to_groupme(response)
             return response
 
+        if message_parts[0] == '/ohama':
+            response = get_giphy_url('chive on')
+            reply_to_groupme(response)
+
+            response = get_giphy_url('chive on')
+            reply_to_groupme(response)
+
+            response = get_giphy_url('chive on')
+            reply_to_groupme(response)
+
+            return response
+
         if message_parts[0] == '/omaha':
             response = get_giphy_url('puppies')
             reply_to_groupme(response)
