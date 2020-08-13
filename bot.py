@@ -32,6 +32,8 @@ def get_giphy_url(query=''):
     print("URL: {url}".format(url=url))
 
     response = requests.get(url)
+    print("Response: {body}".format(body=response.text))
+
     results = json.loads(response.text)
 
     gif = results['data'][random.randint(0, 99)]
