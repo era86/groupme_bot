@@ -30,6 +30,7 @@ def get_giphy_url(query=''):
         rating=giphy_rating
     )
     print("URL: {url}".format(url=url))
+
     response = requests.get(url)
     results = json.loads(response.text)
 
@@ -39,6 +40,7 @@ def get_giphy_url(query=''):
 def get_reddit_url(sub):
     url = "https://www.reddit.com/r/{}.json".format(sub)
     print("URL: {url}".format(url=url))
+
     response = requests.get(url, headers={'User-agent': 'giphy-bot'})
     results = json.loads(response.text)
 
