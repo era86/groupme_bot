@@ -36,7 +36,7 @@ def get_giphy_url(query=''):
 
     idx = random.randint(0, 99)
     print("Index: {idx}".format(idx=idx))
-    print("Results count: {count}".format(len(results['data'])))
+    print("Results count: {count}".format(count=len(results['data'])))
     gif = results['data'][idx]
     return gif['images']['original']['url']
 
