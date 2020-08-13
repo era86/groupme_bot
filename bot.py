@@ -33,9 +33,11 @@ def get_giphy_url(query=''):
 
     response = requests.get(url)
     results = json.loads(response.text)
-    print("Results: {results}".format(results=results['data']))
 
-    gif = results['data'][random.randint(0, 99)]
+    idx = random.randint(0, 99)
+    print("Index: {idx}".format(idx=idx))
+    print("Results count: {count}".format(len(results['data'])))
+    gif = results['data'][idx]
     return gif['images']['original']['url']
 
 def get_reddit_url(sub):
