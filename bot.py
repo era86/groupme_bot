@@ -85,13 +85,13 @@ def groupme_callback():
             return response
 
         if message_parts[0] == '/ohama':
-            response = get_giphy_url('chive on')
+            response = get_reddit_url('sexygirls')
             reply_to_groupme(response)
 
-            response = get_giphy_url('chive on')
+            response = get_reddit_url('sexygirls')
             reply_to_groupme(response)
 
-            response = get_giphy_url('chive on')
+            response = get_reddit_url('sexygirls')
             reply_to_groupme(response)
 
             return response
